@@ -1,4 +1,4 @@
-package com.ps.weatherapp.models.response;
+package com.ps.weatherapp.models.externalresponse;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

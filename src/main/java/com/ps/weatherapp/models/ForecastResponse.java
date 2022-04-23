@@ -6,7 +6,6 @@ import lombok.Data;
 @Data
 public class ForecastResponse {
 
-    private String time;
     private String status;
     private DayTemperature dayTemperature;
 }

@@ -2,7 +2,7 @@ package com.ps.weatherapp.services.impl;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
-import com.ps.weatherapp.models.response.OpenWeatherResponse;
+import com.ps.weatherapp.models.externalresponse.OpenWeatherResponse;
 import com.ps.weatherapp.services.OpenWeatherMapService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +34,7 @@ public class OpenWeatherMapServiceImpl implements OpenWeatherMapService {
                     .queryParam("units", "metric")
                     .queryParam("appid", "d2929e9483efc82c82c32ee7e02d563e");
 
-            ResponseEntity<String> response = restTemplate.exchange(builder.toUriString(), HttpMethod.GET,
+            ResponseEntity<String> response = restTemplate.exchange(builder.build().toString(), HttpMethod.GET,
                     new HttpEntity<>(httpHeaders), String.class);
 
             openWeatherResponses = json.fromJson(response.getBody(), OpenWeatherResponse.class);

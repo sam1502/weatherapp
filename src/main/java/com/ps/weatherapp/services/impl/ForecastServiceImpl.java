@@ -3,16 +3,14 @@ package com.ps.weatherapp.services.impl;
 
 import com.ps.weatherapp.models.DayTemperature;
 import com.ps.weatherapp.models.ForecastResponse;
-import com.ps.weatherapp.models.response.CityDateData;
-import com.ps.weatherapp.models.response.CityWeatherData;
-import com.ps.weatherapp.models.response.OpenWeatherResponse;
+import com.ps.weatherapp.models.externalresponse.CityDateData;
+import com.ps.weatherapp.models.externalresponse.CityWeatherData;
+import com.ps.weatherapp.models.externalresponse.OpenWeatherResponse;
 import com.ps.weatherapp.services.ForecastService;
 import com.ps.weatherapp.services.OpenWeatherMapService;
 import lombok.extern.log4j.Log4j2;
-import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
 
@@ -33,22 +31,26 @@ public class ForecastServiceImpl implements ForecastService {
 
 
     @Override
-    public Map<LocalDate, CityDateData> getForecastFor(String cityName) {
+    public Map<LocalDate, ForecastResponse> getForecastFor(String cityName) {
+        //add 3 to current date for forecast
         List<LocalDate> daysRange = Stream.iterate(LocalDate.now(), date -> date.plusDays(1)).limit(3)
                 .collect(Collectors.toList());
 
-        Map<LocalDate, CityDateData> forecastData = cacheService.getCityDateDataMap(daysRange);
-        if(forecastData.size() == daysRange.size()) {
-            return forecastData;
+        //fetch data from cache
+        Map<LocalDate, CityDateData> forecastData = cacheService.getCityDateDataMap(cityName);
+        if(null != forecastData) {
+            return forecast3Days(forecastData, daysRange);
         }
+        //response from open weather api
         OpenWeatherResponse openWeatherResponse = openWeatherMapService.getForecastData(cityName);
-        Map<LocalDate, CityDateData> cityDaysData =  test(openWeatherResponse);
+        //create day wise data from response
+        Map<LocalDate, CityDateData> cityDaysData =  createDayWiseData(cityName, openWeatherResponse);
+        //return data for 3 days with logic
         return forecast3Days(cityDaysData, daysRange);
 
-        //validate
     }
 
-    private Map<LocalDate, CityDateData> forecast3Days(Map<LocalDate, CityDateData> cityDateDataMap,
+    private Map<LocalDate, ForecastResponse> forecast3Days(Map<LocalDate, CityDateData> cityDateDataMap,
                                                        List<LocalDate> days) {
         Map<LocalDate, CityDateData> forecastMap = new HashMap<>();
         for(LocalDate ld : days) {
@@ -56,11 +58,11 @@ public class ForecastServiceImpl implements ForecastService {
                 forecastMap.put(ld, cityDateDataMap.get(ld));
             }
         }
-        return forecastMap;
+        return updateDayWiseData(forecastMap);
     }
 
 
-    public Map<LocalDate, CityDateData> test(OpenWeatherResponse openWeatherResponse) {
+    public Map<LocalDate, CityDateData> createDayWiseData(String cityName, OpenWeatherResponse openWeatherResponse) {
         Map<LocalDate, CityDateData> dayWiseData = new TreeMap<>();
 
         for (CityWeatherData cwd : openWeatherResponse.getList()) {
@@ -84,7 +86,7 @@ public class ForecastServiceImpl implements ForecastService {
                 dayWiseData.put(date, cityDateData);
             }
         }
-        cacheService.putWeatherData(dayWiseData);
+        cacheService.putWeatherData(cityName, new TreeMap<>(dayWiseData));
         return dayWiseData;
     }
 
@@ -94,6 +96,7 @@ public class ForecastServiceImpl implements ForecastService {
             ForecastResponse fr = new ForecastResponse();
             List<Double> maxMin  = entry.getValue().getTemperatureData();
             fr.setDayTemperature(new DayTemperature(maxMin.get(0), maxMin.get(maxMin.size()-1)));
+            fr.setStatus(maxMin.get(maxMin.size()-1) > 40.0 ? "Use sunscreen lotion" : "Have a nice day");
             forecastResponseMap.put(entry.getKey(), fr);
         }
         return forecastResponseMap;

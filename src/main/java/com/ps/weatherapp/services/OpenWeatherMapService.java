@@ -1,6 +1,6 @@
 package com.ps.weatherapp.services;
 
-import com.ps.weatherapp.models.response.OpenWeatherResponse;
+import com.ps.weatherapp.models.externalresponse.OpenWeatherResponse;
 
 public interface OpenWeatherMapService {
 
