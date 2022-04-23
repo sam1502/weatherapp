@@ -1,4 +1,4 @@
-package com.ps.weatherapp.models.response;
+package com.ps.weatherapp.models.externalresponse;
 
 
 import lombok.Data;
@@ -13,4 +13,5 @@ public class OpenWeatherResponse {
     private int cnt;
     List<CityWeatherData> list;
     private City city;
+    private CityRainInfo rain;
 }

@@ -1,4 +1,4 @@
-package com.ps.weatherapp.models.response;
+package com.ps.weatherapp.models.externalresponse;
 
 import lombok.Data;
 
