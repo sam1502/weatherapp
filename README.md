@@ -1,7 +1,7 @@
 # weatherapp
-Code Quality Score : [![Code Quality](https://api.codiga.io/project/33193/score/svg)]((https://app.codiga.io/public/project/33193/weatherapp/dashboard))
+[![Code Quality](https://api.codiga.io/project/33193/score/svg)](https://app.codiga.io/public/project/33193/weatherapp/dashboard)
 
-Code Quality Grade : [![code rating](https://api.codiga.io/project/33193/status/svg)](https://app.codiga.io/public/project/33193/weatherapp/dashboard)
+[![code rating](https://api.codiga.io/project/33193/status/svg)](https://app.codiga.io/public/project/33193/weatherapp/dashboard)
 
 Wather app using open weather map api. This will forecast the minimum and maximum temprature in a day. Can be enhanced to check the winds/ rain in particular day as well.
 
