@@ -20,6 +20,9 @@ public class CipherUtils {
     static Cipher cipher;
     private static SecretKeySpec secretKey;
 
+    private CipherUtils() {
+    }
+
     static {
         try {
             secretKey = createSecretKey("testKey".toCharArray(), "12345678".getBytes(StandardCharsets.UTF_8));
@@ -64,7 +67,7 @@ public class CipherUtils {
         }
     }
 
-    private static byte[]  base64Decode(String property) {
+    private static byte[] base64Decode(String property) {
         return Base64.getDecoder().decode(property);
     }
 }

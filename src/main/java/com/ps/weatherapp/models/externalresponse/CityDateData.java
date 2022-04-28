@@ -9,4 +9,5 @@ public class CityDateData {
 
     List<Double> temperatureData;
     List<Double> windData;
+    List<Double> rainData;
 }
