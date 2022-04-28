@@ -11,7 +11,9 @@ import com.ps.weatherapp.services.OpenWeatherMapService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 
 import java.time.LocalDate;
@@ -29,32 +31,37 @@ public class ForecastServiceImpl implements ForecastService {
     @Autowired
     private CacheServiceImpl cacheService;
 
+    @Value("${forecast.days}")
+    private int forecastDays;
+
 
     @Override
     public Map<LocalDate, ForecastResponse> getForecastFor(String cityName) {
+        log.info("Fetching data for city : {}", cityName);
         //add 3 to current date for forecast
-        List<LocalDate> daysRange = Stream.iterate(LocalDate.now(), date -> date.plusDays(1)).limit(3)
+        List<LocalDate> daysRange = Stream.iterate(LocalDate.now(), date -> date.plusDays(1)).limit(forecastDays)
                 .collect(Collectors.toList());
 
         //fetch data from cache
         Map<LocalDate, CityDateData> forecastData = cacheService.getCityDateDataMap(cityName);
-        if(null != forecastData) {
+        if (!CollectionUtils.isEmpty(forecastData)) {
+            log.info("Fetching data from cache for city : {} ", cityName);
             return forecast3Days(forecastData, daysRange);
         }
         //response from open weather api
         OpenWeatherResponse openWeatherResponse = openWeatherMapService.getForecastData(cityName);
         //create day wise data from response
-        Map<LocalDate, CityDateData> cityDaysData =  createDayWiseData(cityName, openWeatherResponse);
+        Map<LocalDate, CityDateData> cityDaysData = createDayWiseData(cityName, openWeatherResponse);
         //return data for 3 days with logic
         return forecast3Days(cityDaysData, daysRange);
 
     }
 
     private Map<LocalDate, ForecastResponse> forecast3Days(Map<LocalDate, CityDateData> cityDateDataMap,
-                                                       List<LocalDate> days) {
+                                                           List<LocalDate> days) {
         Map<LocalDate, CityDateData> forecastMap = new HashMap<>();
-        for(LocalDate ld : days) {
-            if(cityDateDataMap.containsKey(ld)) {
+        for (LocalDate ld : days) {
+            if (cityDateDataMap.containsKey(ld)) {
                 forecastMap.put(ld, cityDateDataMap.get(ld));
             }
         }
@@ -63,6 +70,7 @@ public class ForecastServiceImpl implements ForecastService {
 
 
     public Map<LocalDate, CityDateData> createDayWiseData(String cityName, OpenWeatherResponse openWeatherResponse) {
+        log.info("creating day wise data for city : {} ", cityName);
         Map<LocalDate, CityDateData> dayWiseData = new TreeMap<>();
 
         for (CityWeatherData cwd : openWeatherResponse.getList()) {
@@ -71,6 +79,15 @@ public class ForecastServiceImpl implements ForecastService {
                 CityDateData cityDateData = dayWiseData.get(date);
                 cityDateData.getTemperatureData().add(cwd.getMain().getTemp());
                 cityDateData.getWindData().add(cwd.getWind().getSpeed());
+                if (null != cwd.getRain()) {
+                    double rainData;
+                    rainData = Double.parseDouble(cwd.getRain().getH());
+                    if (null == cityDateData.getRainData()) {
+                        cityDateData.setRainData(new ArrayList<>());
+                    }
+                    cityDateData.getRainData().add(rainData);
+                }
+
                 Collections.sort(cityDateData.getTemperatureData());
                 Collections.sort(cityDateData.getWindData());
                 dayWiseData.put(date, cityDateData);
@@ -83,6 +100,12 @@ public class ForecastServiceImpl implements ForecastService {
 
                 cityDateData.setTemperatureData(temperatureList);
                 cityDateData.setWindData(windList);
+
+                if(null != cwd.getRain()) {
+                    List<Double> rainList = new ArrayList<>();
+                    rainList.add(cwd.getRain() != null ? Double.parseDouble(cwd.getRain().getH()) : null);
+                    cityDateData.setRainData(rainList);
+                }
                 dayWiseData.put(date, cityDateData);
             }
         }
@@ -92,11 +115,12 @@ public class ForecastServiceImpl implements ForecastService {
 
     private Map<LocalDate, ForecastResponse> updateDayWiseData(Map<LocalDate, CityDateData> dateCityDateDataMap) {
         Map<LocalDate, ForecastResponse> forecastResponseMap = new HashMap<>();
-        for(Map.Entry<LocalDate, CityDateData> entry : dateCityDateDataMap.entrySet()) {
+        for (Map.Entry<LocalDate, CityDateData> entry : dateCityDateDataMap.entrySet()) {
             ForecastResponse fr = new ForecastResponse();
-            List<Double> maxMin  = entry.getValue().getTemperatureData();
-            fr.setDayTemperature(new DayTemperature(maxMin.get(0), maxMin.get(maxMin.size()-1)));
-            fr.setStatus(maxMin.get(maxMin.size()-1) > 40.0 ? "Use sunscreen lotion" : "Have a nice day");
+            List<Double> maxMin = entry.getValue().getTemperatureData();
+            fr.setDayTemperature(new DayTemperature(maxMin.get(0), maxMin.get(maxMin.size() - 1)));
+            fr.setStatus(entry.getValue().getRainData() != null ? "Carry Umbrella" : "Have a nice day");
+            fr.setStatus(maxMin.get(maxMin.size() - 1) > 40.0 ? "Use sunscreen lotion" : "Have a nice day");
             forecastResponseMap.put(entry.getKey(), fr);
         }
         return forecastResponseMap;
