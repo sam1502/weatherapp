@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ForecastServiceUtils {
+public final class ForecastServiceUtils {
 
     private ForecastServiceUtils() {
         throw new UtilityClassException("Utility Class!");
