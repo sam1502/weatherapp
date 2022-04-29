@@ -8,6 +8,7 @@ import com.ps.weatherapp.models.externalresponse.CityWeatherData;
 import com.ps.weatherapp.models.externalresponse.OpenWeatherResponse;
 import com.ps.weatherapp.services.ForecastService;
 import com.ps.weatherapp.services.OpenWeatherMapService;
+import com.ps.weatherapp.utils.ForecastServiceUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -65,7 +66,7 @@ public class ForecastServiceImpl implements ForecastService {
                 forecastMap.put(ld, cityDateDataMap.get(ld));
             }
         }
-        return updateDayWiseData(forecastMap);
+        return ForecastServiceUtils.updateDayWiseData(forecastMap);
     }
 
 
@@ -111,18 +112,5 @@ public class ForecastServiceImpl implements ForecastService {
         }
         cacheService.putWeatherData(cityName, new TreeMap<>(dayWiseData));
         return dayWiseData;
-    }
-
-    private Map<LocalDate, ForecastResponse> updateDayWiseData(Map<LocalDate, CityDateData> dateCityDateDataMap) {
-        Map<LocalDate, ForecastResponse> forecastResponseMap = new HashMap<>();
-        for (Map.Entry<LocalDate, CityDateData> entry : dateCityDateDataMap.entrySet()) {
-            ForecastResponse fr = new ForecastResponse();
-            List<Double> maxMin = entry.getValue().getTemperatureData();
-            fr.setDayTemperature(new DayTemperature(maxMin.get(0), maxMin.get(maxMin.size() - 1)));
-            fr.setStatus(entry.getValue().getRainData() != null ? "Carry Umbrella" : "Have a nice day");
-            fr.setStatus(maxMin.get(maxMin.size() - 1) > 40.0 ? "Use sunscreen lotion" : "Have a nice day");
-            forecastResponseMap.put(entry.getKey(), fr);
-        }
-        return forecastResponseMap;
     }
 }

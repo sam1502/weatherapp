@@ -1,6 +1,5 @@
 package com.ps.weatherapp;
 
-import com.ps.weatherapp.configs.CipherUtils;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

@@ -1,6 +1,9 @@
 package com.ps.weatherapp.controllers;
 
 import com.ps.weatherapp.services.ForecastService;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +23,10 @@ public class ForecastController {
     @Autowired
     private ForecastService forecastService;
 
+    @ApiOperation(value = "Get the weather information for a city", response = Iterable.class, tags = "weatherForecast")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Success|OK"),
+            @ApiResponse(code = 404, message = "not found!!!") })
     @GetMapping("/forecast/{cityName}")
     public ResponseEntity<Object> forecastOf(@PathVariable @NotBlank String cityName) {
         Pattern pattern = Pattern.compile("^[a-zA-Z\\s]*$");
