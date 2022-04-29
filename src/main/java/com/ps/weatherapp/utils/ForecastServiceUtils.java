@@ -1,5 +1,6 @@
 package com.ps.weatherapp.utils;
 
+import com.ps.weatherapp.exceptions.UtilityClassException;
 import com.ps.weatherapp.models.DayTemperature;
 import com.ps.weatherapp.models.ForecastResponse;
 import com.ps.weatherapp.models.externalresponse.CityDateData;
@@ -10,6 +11,10 @@ import java.util.List;
 import java.util.Map;
 
 public class ForecastServiceUtils {
+
+    private ForecastServiceUtils() {
+        throw new UtilityClassException("Utility Class!");
+    }
 
     public static Map<LocalDate, ForecastResponse> updateDayWiseData(
             Map<LocalDate, CityDateData> dateCityDateDataMap) {
